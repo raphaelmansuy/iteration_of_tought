@@ -33,7 +33,7 @@ To get started with the IoT framework, you’ll need to set up your environment 
 2. **Set up OpenAI API:** Obtain your API key from OpenAI and set it as an environment variable.
 3. **Install Dependencies:** Use Poetry or pip to install required packages:
    ```bash
-   pip install openai loguru
+   poetry install
    ```
 
 #### Understanding the Code Structure
