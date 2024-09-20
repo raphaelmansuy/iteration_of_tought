@@ -1,11 +1,15 @@
 
-## Iteration of Thought (IoT) Framework for Generating Responses Using OpenAI's API for the Impatient: From Novice to Practitioner in Record Time
+## Iteration of Thought (IoT) Framework
 
 ### 1. Introduction
 
 #### Why IoT?
 
-In today's fast-paced world, generating accurate and contextually relevant responses using AI is more critical than ever. Whether you're developing chatbots, virtual assistants, or any application that relies on natural language processing, understanding how to leverage frameworks like the Iteration of Thought (IoT) can significantly enhance your results.
+Generating accurate and contextually relevant responses using AI is more critical than ever. Whether you're developing chatbots, virtual assistants, or any application that relies on natural language processing, understanding how to leverage frameworks like the Iteration of Thought (IoT) can significantly enhance your results.
+
+This implementation is based on the article: https://arxiv.org/pdf/2409.12618
+
+> Iteration of Thought: Leveraging Inner Dialogue for Autonomous Large Language Model Reasoning
 
 #### What is IoT?
 
@@ -83,13 +87,13 @@ This query might require multiple iterations for deeper insights into various as
 
 ### 4. Interactive Elements
 
-#### Quick Quiz: Test Your Knowledge
+#### Quick Quiz: Test Your Knowledge 🧠✨
 
-**Question:** What are the two main components of the IoT framework?
+**Question:** What are the two main components of the IoT framework? 🤔
 
-- A) AIoT and GIoT
-- B) Machine Learning and Deep Learning
-- C) Data Science and Data Engineering
+- A) AIoT and GIoT 🌐🔄
+- B) Machine Learning and Deep Learning 📊🧠
+- C) Data Science and Data Engineering 📈🔧
 
 *Pause and reflect before checking your answer!*
 
@@ -144,6 +148,3 @@ To put your new knowledge into practice within 24 hours:
 
 By taking these steps, you'll not only reinforce what you've learned but also begin applying it in real-world scenarios—empowering you as a practitioner in no time!
 
----
-
-If you would like me to elaborate further on any specific section or have additional requests, please let me know!
