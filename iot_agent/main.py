@@ -110,7 +110,12 @@ def get_user_query() -> str:
     )
 
     console.print(Panel.fit("Enter your query (or press Enter to use the sample query):"))
-    user_input = Prompt.ask("Query", default=sample_query)
+    user_input = Prompt.ask("Query", default=sample_query, show_default=True)
+    
+    if not user_input.strip():
+        console.print("[yellow]No input provided. Using sample query.[/yellow]")
+        return sample_query
+    
     return user_input
 
 def timeout_handler(signum, frame):
