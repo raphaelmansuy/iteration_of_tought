@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.12"
 openai = "^1.46.1"
 loguru = "^0.7.2"
+rich = "^13.8.1"
 
 
 [build-system]
