@@ -1,0 +1,55 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+dist/
+build/
+
+# Pytest
+.cache
+*.cover
+*.log
+nosetests.xml
+coverage.xml
+*.cover
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pylint
+pylint-report.txt
+pylint-global.txt
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Sphinx documentation
+docs/_build/
+
+# Docker
+*.dockerfile
+docker-compose.override.yml
+
+# Local environment variables
+.env
+
+venv
+
+**/*.pyc
+
+__pycache__/

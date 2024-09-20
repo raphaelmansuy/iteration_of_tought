@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "iot-agent"
+version = "0.1.0"
+description = ""
+authors = ["Raphael MANSUY <raphael.mansuy.partner@decathlon.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+openai = "^1.46.1"
+loguru = "^0.7.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+iot-agent = "iot_agent.main:main"

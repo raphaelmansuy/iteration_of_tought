@@ -1,0 +1,56 @@
+## Python Coding Guidelines
+
+- **Python Version**: Use 3.11.x
+- **Dependency Management**: Use Poetry (`pyproject.toml`)
+- **Testing**: Use PyTest in `tests/`
+- **IDE**: VSCode
+- **Code Formatting**: Black
+- **Linting**: Flake8
+- **Static Type Checking**: Pyright
+- **Data Validation**: Pydantic 2.9.x
+- **Web Framework**: FastAPI
+- **ORM**: SQLAlchemy
+- **Database Migrations**: Alembic
+- **CLI**: Click 8.1.x
+- **Logging**: Loguru
+- **Configuration**: PyYAML
+- **Environment Management**: Poetry
+- **Documentation**: Sphinx
+- **Deployment**: Docker
+- **CI/CD**: GitHub Actions
+
+
+## Code Style
+
+- Use snake case for identifiers; kebab case for filenames.
+- Use f-strings for formatting; triple quotes for multi-line strings.
+- Apply type hints for all functions, variables, class attributes, and parameters.
+- Prefer `pydantic` models over dictionaries for data validation.
+- Prefer composition over inheritance.
+- Follow the single source of truth principle. Kiss (Keep It Simple Stupid) principle.
+- Use enums for constants.
+- Use type guards to validate data types.
+
+## Project Structure
+
+```
+├── pyproject.toml
+├── poetry.lock
+├── src/
+│   └── your_package/
+│       ├── __init__.py
+│       └── main.py
+└── tests/
+    ├── __init__.py
+    └── test_main.py
+```
+
+## Coding Standards
+
+- **PEP 8**: Follow for style (max 79 chars, spaces around operators, use `f-strings`).
+- **Docstrings**: Required for all public functions/classes.
+
+## Testing Practices
+
+- **Independence**: Tests should not rely on external systems.
+- **Coverage**: Aim for high coverage; use fixtures for setup.
