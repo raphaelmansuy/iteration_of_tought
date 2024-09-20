@@ -21,13 +21,16 @@ client = OpenAI(api_key=API_KEY)
 
 console = Console()
 
+
 class IterationOfThought:
     def __init__(self, model: str = MODEL, max_iterations: int = 5, timeout: int = 30):
         self.model = model
         self.max_iterations = max_iterations
         self.timeout = timeout
 
-    def _call_openai(self, prompt: str, temperature: float = 0.5, max_retries: int = 3) -> str:
+    def _call_openai(
+        self, prompt: str, temperature: float = 0.5, max_retries: int = 3
+    ) -> str:
         logger.debug(f"Calling OpenAI API with prompt: {prompt}")
 
         for attempt in range(max_retries):
@@ -40,13 +43,13 @@ class IterationOfThought:
                 return response.choices[0].message.content.strip()
             except OpenAIError as e:
                 logger.error(f"An error occurred while calling OpenAI API: {e}")
-                if attempt < max_retries - 1:
+                if "rate limit" in str(e).lower():
                     logger.warning(
                         f"Rate limit exceeded. Waiting for {RATE_LIMIT_WAIT_TIME} seconds."
                     )
                     time.sleep(RATE_LIMIT_WAIT_TIME)
                 else:
-                    logger.error(f"Max retries reached. Error: {e}")
+                    logger.error(f"Error: {e}")
                     return ""
         logger.error("Failed to get a response from OpenAI API after max retries")
         return ""
@@ -67,7 +70,7 @@ class IterationOfThought:
 
     def stopping_criterion(self, response: str) -> bool:
         lower_response = response.lower()
-        return "answer:" in lower_response or "final answer:" in lower_response
+        return any(keyword in lower_response for keyword in ["answer:", "final answer:", "conclusion:", "summary:", "the answer is:"])
 
     def aiot(self, query: str) -> str:
         logger.info("Starting AIoT...")
@@ -105,6 +108,7 @@ class IterationOfThought:
         logger.info("GIoT completed.\n")
         return current_response
 
+
 def get_user_query() -> str:
     sample_query = (
         "A textile dye containing an extensively conjugated pi-electrons emits light with energy of 2.3393 eV. "
@@ -112,15 +116,20 @@ def get_user_query() -> str:
         "A. Red\nB. Yellow\nC. Blue\nD. Violet"
     )
 
-    console.print(Panel.fit("Enter your query (or press Enter to use the sample query):"))
+    console.print(
+        Panel.fit("Enter your query (or press Enter to use the sample query):")
+    )
     user_input = input().strip()
     return user_input if user_input else sample_query
+
 
 def timeout_handler(signum, frame):
     raise TimeoutError("Process took too long")
 
+
 def interrupt_handler(signum, frame):
     raise KeyboardInterrupt("User interrupted the process")
+
 
 def run_iot(iot: IterationOfThought, query: str, method: str) -> str:
     with Progress(
@@ -129,12 +138,20 @@ def run_iot(iot: IterationOfThought, query: str, method: str) -> str:
         transient=True,
     ) as progress:
         task = progress.add_task(f"Running {method}...", total=None)
-        result = iot.aiot(query) if method == "AIoT" else iot.giot(query, fixed_iterations=3)
+        result = (
+            iot.aiot(query) if method == "AIoT" else iot.giot(query, fixed_iterations=3)
+        )
         progress.update(task, completed=True)
     return result
 
+
 @click.command()
-@click.option('--method', type=click.Choice(['AIoT', 'GIoT', 'both']), default='both', help='Choose the method to run')
+@click.option(
+    "--method",
+    type=click.Choice(["AIoT", "GIoT", "both"]),
+    default="both",
+    help="Choose the method to run",
+)
 def main(method: str) -> None:
     logger.add("debug.log", level="DEBUG")
 
@@ -148,13 +165,17 @@ def main(method: str) -> None:
     try:
         signal.alarm(GLOBAL_TIMEOUT)
 
-        if method in ['AIoT', 'both']:
+        if method in ["AIoT", "both"]:
             final_response_aiot = run_iot(iot, query, "AIoT")
-            console.print(Panel(final_response_aiot, title="Final AIoT Response", expand=False))
+            console.print(
+                Panel(final_response_aiot, title="Final AIoT Response", expand=False)
+            )
 
-        if method in ['GIoT', 'both']:
+        if method in ["GIoT", "both"]:
             final_response_giot = run_iot(iot, query, "GIoT")
-            console.print(Panel(final_response_giot, title="Final GIoT Response", expand=False))
+            console.print(
+                Panel(final_response_giot, title="Final GIoT Response", expand=False)
+            )
 
         signal.alarm(0)
     except TimeoutError:
@@ -164,6 +185,7 @@ def main(method: str) -> None:
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
         console.print(f"❌ An unexpected error occurred: {e}", style="bold red")
+
 
 if __name__ == "__main__":
     main()
