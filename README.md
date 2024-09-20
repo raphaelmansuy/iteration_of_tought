@@ -136,7 +136,6 @@ sequenceDiagram
 
 ### 8. Conclusion
 
-Congratulations! You’ve now gained foundational knowledge about the Iteration of Thought framework for generating responses using OpenAI's API.
 
 #### Call-to-Action: Apply What You've Learned!
 
