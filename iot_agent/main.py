@@ -15,11 +15,13 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.markdown import Markdown
 from litellm import completion
+import requests  # Added for handling URL requests
 
 API_KEY = os.getenv("OPENAI_API_KEY")
 MODEL = "gpt-4o-mini"  # Updated to a more recent model
 RATE_LIMIT_WAIT_TIME = 10
 GLOBAL_TIMEOUT = 300
+DOWNLOAD_TIMEOUT = 10
 
 if not API_KEY:
     raise ValueError("OpenAI API key must be set as an environment variable.")
@@ -316,12 +318,24 @@ def display_results(aiot_result: Optional[str], giot_result: Optional[str]):
     type=str,
     help="User query to process (if not provided, a sample query will be used)",
 )
+@click.option(
+    "--file",
+    type=str,
+    help="File path or URL to read the query from",
+)
+@click.option(
+    "--output",
+    type=str,
+    help="File path to save the response (if provided)",
+)  # Added output parameter
 def main(
     method: str,
     verbose: bool,
     model: str,
     temperature: float,
     query: Optional[str] = None,
+    file: Optional[str] = None,
+    output: Optional[str] = None,  # Added output parameter
 ) -> None:
     """Main entry point for the IoT application.
 
@@ -345,6 +359,20 @@ def main(
         model=model, max_iterations=5, timeout=2, temperature=temperature
     )  # Added temperature as an argument
     console.print(f"[bold cyan]Using model: {model}[/bold cyan]")
+    
+    if file:
+        if file.startswith("http://") or file.startswith("https://"):
+            response = requests.get(file, timeout=DOWNLOAD_TIMEOUT)  # Download content from URL with timeout
+            file_content = response.text.strip()  # Use the content as the query
+        else:
+            with open(file, 'r', encoding='utf-8') as f:  # Read content from file
+                file_content = f.read().strip()  # Use the content as the query
+
+        if query:  # Check if query is also provided
+            query = f"{file_content}\n ----------- \n {query}"  # Combine file content and query
+        else:
+            query = file_content  # Use file content if no query is provided
+
     query = query or get_user_query()  # Use provided query or get user input
     console.print(
         Panel(Markdown(f"**Query:** {query}"), title="Input Query", expand=False)
@@ -373,6 +401,16 @@ def main(
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
         console.print(f"❌ [bold red]An unexpected error occurred: {e}[/bold red]")
+
+    if output and os.path.exists(output):  # Check if the output file exists
+        overwrite = Prompt.ask("Output file exists. Overwrite? (y/n)", default="n")
+        if overwrite.lower() != "y":
+            console.print("[yellow]Output file not overwritten.[/yellow]")
+            output = None  # Reset output if not overwriting
+
+    if output:  # Save the result to the specified output file if provided
+        with open(output, 'w', encoding='utf-8') as f:
+            f.write(aiot_result or giot_result)  # Write the result to the file
 
 
 if __name__ == "__main__":

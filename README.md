@@ -8,7 +8,7 @@ Generating accurate and contextually relevant responses using AI is more critica
 
 This implementation is based on the article: https://arxiv.org/pdf/2409.12618
 
-> Iteration of Thought: Leveraging Inner Dialogue for Autonomous Large Language Model Reasoning
+> 💡 Iteration of Thought: Leveraging Inner Dialogue for Autonomous Large Language Model Reasoning
 
 #### What is IoT?
 
@@ -19,7 +19,7 @@ The Iteration of Thought framework is designed to facilitate iterative response 
 
 #### How does it work?
 
-At its core, the IoT framework employs OpenAI's API to generate responses based on user queries. By implementing iterative processes, it allows for continuous improvement of these responses through feedback loops—essentially teaching the AI to think deeper with each iteration.
+At its core, the IoT framework employs an LLM to generate responses based on user queries. By implementing iterative processes, it allows for continuous improvement of these responses through feedback loops—essentially teaching the AI to think deeper with each iteration.
 
 #### When to use it?
 
@@ -32,12 +32,12 @@ The IoT framework is particularly useful in scenarios where complex queries requ
 To get started with the IoT framework, you'll need to set up your environment correctly:
 
 1. **Install Python:** Ensure you have Python installed on your machine (version 3.11 or higher).
-2. **Set up OpenAI API:** Obtain your API key from OpenAI and set it as an environment variable.
+2. **Set up OpenAI API:** Obtain your API key from OpenAI and set it as an environment variable. (You can use another model for example ollama/gemma2:2b)
 3. **Install Poetry:** If you haven't already, install Poetry by following the instructions on the [Poetry website](https://python-poetry.org/docs/#installation).
 4. **Clone the Repository:** Clone the repository containing the IoT framework code:
    ```bash
-   git clone https://github.com/raphaelmansuy/iteration_of_tought
-   cd iteration_of_tough
+   git clone https://github.com/raphaelmansuy/iteration_of_thought
+   cd iteration_of_thought
    ```
 5. **Install Dependencies:** Use Poetry to install required packages:
    ```bash
@@ -54,16 +54,18 @@ To run the program, you can use the following command within the Poetry environm
    ```
 2. **Run the Main Script:**
    ```bash
-   python src/iot_agent/main.py
+   python src/iot_agent/main.py --method AIoT --query "Your query here" --temperature 0.5
    ```
+
+   You can specify the method (`AIoT` or `GIoT`), the query, and the sampling temperature for the LLM response.
 
 #### Understanding the Code Structure
 
 The provided code consists of several key components:
 
-- **IterationOfThought Class:** This class manages the iteration process using specified models.
+- **IterationOfThought Class:** This class manages the iteration process using specified models and includes methods for both AIoT and GIoT.
 - **Methods:** 
-  - `_call_openai`: Handles API calls to OpenAI's service.
+  - `_call_llm`: Handles API calls to an LLLM service.
   - `inner_dialogue_agent`: Generates new prompts based on previous responses to refine the output.
   - `llm_agent`: Combines the user query with the generated prompt to produce a refined response.
   - `stopping_criterion`: Determines when to stop iterating based on the content of the response.
@@ -80,8 +82,18 @@ The provided code consists of several key components:
    ```python
    import os
    import time
-   from openai import OpenAI, OpenAIError
+   import signal
+   from typing import Optional
    from loguru import logger
+   import click
+   from rich.console import Console
+   from rich.panel import Panel
+   from rich.progress import Progress, SpinnerColumn, TextColumn
+   from rich.prompt import Prompt
+   from rich.table import Table
+   from rich.markdown import Markdown
+   from litellm import completion
+   import requests  # Added for handling URL requests
    ```
 
 2. **API Key Handling:**
@@ -94,31 +106,36 @@ The provided code consists of several key components:
    ```
 
 3. **IterationOfThought Class:**
-   This class encapsulates the logic for both AIoT and GIoT methods. It initializes with parameters such as the model type, maximum iterations, and timeout settings.
+   This class encapsulates the logic for both AIoT and GIoT methods. It initializes with parameters such as the model type, maximum iterations, timeout settings, and temperature.
 
    ```python
    class IterationOfThought:
-       def __init__(self, model: str = MODEL, max_iterations: int = 5, timeout: int = 30):
+       def __init__(self, model: str = MODEL, max_iterations: int = 5, timeout: int = 30, temperature: float = 0.5):
            self.model = model
            self.max_iterations = max_iterations
            self.timeout = timeout
+           self.temperature = temperature
    ```
 
 4. **API Call Method:**
-   The `_call_openai` method handles the interaction with the OpenAI API, including error handling for rate limits.
+   The `_call_llm` method handles the interaction with the OpenAI API, including error handling for rate limits.
 
    ```python
-   def _call_openai(self, prompt: str, temperature: float = 0.5, max_retries: int = 3) -> str:
-       for attempt in range(max_retries):
+   def _call_llm(self, prompt: str, temperature: Optional[float] = None, max_retries: int = 3) -> str:
+       for _ in range(max_retries):
            try:
-               response = client.chat.completions.create(
-                   model=self.model,
-                   messages=[{"role": "user", "content": prompt}],
-                   temperature=temperature,
-               )
-               return response.choices[0].message.content.strip()
-           except OpenAIError as e:
-               # Handle errors
+               with console.status(f"[bold green]Calling {self.model} API...", spinner="dots"):
+                   response = completion(
+                       model=self.model,
+                       temperature=temperature or self.temperature,
+                       messages=[{"role": "user", "content": prompt}],
+                   )
+               return response["choices"][0]["message"]["content"].strip()
+           except Exception as e:
+               console.print(f"[red]Error: {e}")
+               return ""
+       console.print("[red]Failed to get a response from OpenAI API after max retries")
+       return ""
    ```
 
 5. **Inner Dialogue Agent:**
@@ -130,7 +147,7 @@ The provided code consists of several key components:
            f"Given the original query: '{query}' and the previous response: '{previous_response}', "
            "generate an instructive and context-specific prompt to refine and improve the answer."
        )
-       return self._call_openai(prompt)
+       return self._call_llm(prompt)
    ```
 
 6. **AIoT and GIoT Methods:**
@@ -160,7 +177,7 @@ The provided code consists of several key components:
 
    ```python
    @click.command()
-   @click.option("--method", type=click.Choice(["AIoT", "GIoT", "both"]), default="both", help="Choose the method to run")
+   @click.option("--method", type=click.Choice(["AIoT", "GIoT", "both"]), default="AIoT", help="Choose the method to run")
    def main(method: str) -> None:
        # Main execution logic
    ```
