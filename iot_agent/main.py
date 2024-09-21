@@ -32,7 +32,13 @@ class IterationOfThought:
     Class for performing Iteration of Thought (IoT) and Generative Iteration of Thought (GIoT).
     """
 
-    def __init__(self, model: str = MODEL, max_iterations: int = 5, timeout: int = 30):
+    def __init__(
+        self,
+        model: str = MODEL,
+        max_iterations: int = 5,
+        timeout: int = 30,
+        temperature: float = 0.5,  # Added temperature parameter
+    ):
         """
         Initialize the IterationOfThought class.
 
@@ -44,9 +50,10 @@ class IterationOfThought:
         self.model = model
         self.max_iterations = max_iterations
         self.timeout = timeout  # Ensure this line is included
+        self.temperature = temperature  # Ensure this line is included
 
     def _call_llm(
-        self, prompt: str, temperature: float = 0.5, max_retries: int = 3
+        self, prompt: str, temperature: Optional[float] = None, max_retries: int = 3
     ) -> str:
         """
         Call the OpenAI API with the given prompt and return the response.
@@ -62,10 +69,12 @@ class IterationOfThought:
         for _ in range(max_retries):  # Changed 'attempt' to '_'
             try:
                 with console.status(
-                    "[bold green]Calling OpenAI API...", spinner="dots"
+                    f"[bold green]Calling {self.model} API...", spinner="dots"
                 ):
                     response = completion(
                         model=self.model,
+                        temperature=temperature
+                        or self.temperature,  # Use instance temperature if not provided
                         messages=[{"role": "user", "content": prompt}],
                     )
                 return response["choices"][0]["message"]["content"].strip()
@@ -141,7 +150,9 @@ class IterationOfThought:
             str: The final response after iterations.
         """
         console.print("\n[bold cyan]Starting AIoT...[/bold cyan]")
-        current_response = self.llm_agent(query, "Initial Prompt")
+        current_response = self.llm_agent(
+            query, "Initial Prompt"
+        )  # Pass temperature here if needed
 
         for iteration in range(1, self.max_iterations + 1):
             console.print(f"\n[bold]Iteration {iteration}:[/bold]")
@@ -171,7 +182,9 @@ class IterationOfThought:
             str: The final response after iterations.
         """
         console.print("\n[bold magenta]Starting GIoT...[/bold magenta]")
-        current_response = self.llm_agent(query, "Initial Prompt")
+        current_response = self.llm_agent(
+            query, "Initial Prompt"
+        )  # Pass temperature here if needed
 
         for iteration in range(1, fixed_iterations + 1):
             console.print(f"\n[bold]Iteration {iteration}:[/bold]")
@@ -187,6 +200,12 @@ class IterationOfThought:
 
 
 def get_user_query() -> str:
+    """
+    Get the user query from the console input.
+
+    Returns:
+        str: The user query.
+    """
     sample_query = (
         "A textile dye containing an extensively conjugated pi-electrons emits light with energy of 2.3393 eV. "
         "What color of light is absorbed by the organic compound? Pick an answer from the following options:\n"
@@ -276,16 +295,42 @@ def display_results(aiot_result: Optional[str], giot_result: Optional[str]):
 @click.option(
     "--method",
     type=click.Choice(["AIoT", "GIoT", "both"]),
-    default="both",
+    default="AIoT",
     help="Choose the method to run",
 )
 @click.option("--verbose", is_flag=True, help="Enable verbose output")
-def main(method: str, verbose: bool) -> None:
+@click.option(
+    "--model",
+    type=str,
+    default="openai/gpt-4o-mini",
+    help="Model to use (default: openai/gpt-4o-mini)",
+)
+@click.option(
+    "--temperature",
+    type=float,
+    default=0.5,
+    help="Sampling temperature for the LLM response (default: 0.5)",
+)
+@click.option(
+    "--query",
+    type=str,
+    help="User query to process (if not provided, a sample query will be used)",
+)
+def main(
+    method: str,
+    verbose: bool,
+    model: str,
+    temperature: float,
+    query: Optional[str] = None,
+) -> None:
     """Main entry point for the IoT application.
 
     Args:
         method (str): The method to run (AIoT, GIoT, or both).
         verbose (bool): Flag to enable verbose output.
+        llm (str): The LLM to use (default: openai).
+        model (str): The model to use (default: gpt-4o-mini).
+        temperature (float): Sampling temperature for the LLM response.
     """
     if verbose:
         logger.add("debug.log", level="DEBUG")
@@ -296,8 +341,11 @@ def main(method: str, verbose: bool) -> None:
     signal.signal(signal.SIGALRM, timeout_handler)
     signal.signal(signal.SIGINT, interrupt_handler)
 
-    iot = IterationOfThought(model=MODEL, max_iterations=5, timeout=2)
-    query = get_user_query()
+    iot = IterationOfThought(
+        model=model, max_iterations=5, timeout=2, temperature=temperature
+    )  # Added temperature as an argument
+    console.print(f"[bold cyan]Using model: {model}[/bold cyan]")
+    query = query or get_user_query()  # Use provided query or get user input
     console.print(
         Panel(Markdown(f"**Query:** {query}"), title="Input Query", expand=False)
     )
@@ -321,10 +369,14 @@ def main(method: str, verbose: bool) -> None:
         console.print("⚠️ [bold red]Process timed out. Please try again.[/bold red]")
     except KeyboardInterrupt:
         console.print("✋ [bold yellow]Process interrupted by user.[/bold yellow]")
+    # pylint: disable=broad-except
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
         console.print(f"❌ [bold red]An unexpected error occurred: {e}[/bold red]")
 
 
 if __name__ == "__main__":
+    """
+    Main entry point for the IoT application.
+    """
     main()
