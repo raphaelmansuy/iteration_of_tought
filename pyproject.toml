@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "iot-agent"
 version = "0.1.0"
-description = ""
-authors = ["Raphael MANSUY <raphael.mansuy.partner@decathlon.com>"]
+description = "Iteration of Thought LLM Agent"
+authors = ["Raphael MANSUY <raphael.mansuy@gmail.com>"]
 readme = "README.md"
+license = "MIT"
+keywords = ["llm", "agent", "openai", "litellm"]
+repository = "https://github.com/raphaelmansuy/iteration_of_tought"
 
 [tool.poetry.dependencies]
 python = "^3.12"

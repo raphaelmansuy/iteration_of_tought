@@ -70,15 +70,11 @@ class IterationOfThought:
         """
         for _ in range(max_retries):  # Changed 'attempt' to '_'
             try:
-                with console.status(
-                    f"[bold green]Calling {self.model} API...", spinner="dots"
-                ):
-                    response = completion(
-                        model=self.model,
-                        temperature=temperature
-                        or self.temperature,  # Use instance temperature if not provided
-                        messages=[{"role": "user", "content": prompt}],
-                    )
+                response = completion(
+                    model=self.model,
+                    temperature=temperature or self.temperature,
+                    messages=[{"role": "user", "content": prompt}],
+                )
                 return response["choices"][0]["message"]["content"].strip()
             # pylint: disable=broad-except
             except Exception as e:
@@ -359,13 +355,15 @@ def main(
         model=model, max_iterations=5, timeout=2, temperature=temperature
     )  # Added temperature as an argument
     console.print(f"[bold cyan]Using model: {model}[/bold cyan]")
-    
+
     if file:
         if file.startswith("http://") or file.startswith("https://"):
-            response = requests.get(file, timeout=DOWNLOAD_TIMEOUT)  # Download content from URL with timeout
+            response = requests.get(
+                file, timeout=DOWNLOAD_TIMEOUT
+            )  # Download content from URL with timeout
             file_content = response.text.strip()  # Use the content as the query
         else:
-            with open(file, 'r', encoding='utf-8') as f:  # Read content from file
+            with open(file, "r", encoding="utf-8") as f:  # Read content from file
                 file_content = f.read().strip()  # Use the content as the query
 
         if query:  # Check if query is also provided
@@ -409,7 +407,7 @@ def main(
             output = None  # Reset output if not overwriting
 
     if output:  # Save the result to the specified output file if provided
-        with open(output, 'w', encoding='utf-8') as f:
+        with open(output, "w", encoding="utf-8") as f:
             f.write(aiot_result or giot_result)  # Write the result to the file
 
 
