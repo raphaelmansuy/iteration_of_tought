@@ -1,12 +1,23 @@
 [tool.poetry]
 name = "iot-agent"
-version = "0.1.0"
+version = "0.1.2"
 description = "Iteration of Thought LLM Agent"
 authors = ["Raphael MANSUY <raphael.mansuy@gmail.com>"]
 readme = "README.md"
 license = "MIT"
 keywords = ["llm", "agent", "openai", "litellm"]
+homepage = "https://github.com/raphaelmansuy/iteration_of_thought"
 repository = "https://github.com/raphaelmansuy/iteration_of_tought"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -14,7 +25,7 @@ openai = "^1.46.1"
 loguru = "^0.7.2"
 rich = "^13.8.1"
 litellm = "^1.46.8"
-
+setuptools = "^75.1.0"
 
 [build-system]
 requires = ["poetry-core"]

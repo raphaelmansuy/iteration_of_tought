@@ -8,6 +8,7 @@ import signal
 from typing import Optional
 from loguru import logger
 import click
+import requests
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -15,7 +16,7 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.markdown import Markdown
 from litellm import completion
-import requests  # Added for handling URL requests
+import pkg_resources  
 
 API_KEY = os.getenv("OPENAI_API_KEY")
 MODEL = "gpt-4o-mini"  # Updated to a more recent model
@@ -289,6 +290,72 @@ def display_results(aiot_result: Optional[str], giot_result: Optional[str]):
     console.print(table)
 
 
+console = Console()
+
+
+def check_for_updates(package_name: str) -> None:
+    """Check if the installed package is the latest version available on PyPI."""
+    try:
+        # Get the installed version
+        installed_version = pkg_resources.get_distribution(package_name).version
+
+        # Fetch the latest version from PyPI
+        response = requests.get(
+            f"https://pypi.org/pypi/{package_name}/json", timeout=10
+        )
+        response.raise_for_status()
+
+        latest_version = response.json()["info"]["version"]
+
+        if installed_version != latest_version:
+            console.print(
+                f"[yellow]A new version of {package_name} is available: {latest_version} (installed: {installed_version})[/yellow]"
+            )
+            console.print(
+                "[yellow]Consider upgrading to the latest version for new features and improvements.[/yellow]"
+            )
+        else:
+            console.print(
+                f"[green]You are using the latest version of {package_name}.[/green]"
+            )
+
+    except Exception as e:
+        console.print(f"[red]Error checking for updates: {e}[/red]")
+
+
+def check_for_updates(package_name: str) -> None:
+    """
+    Check if the installed package is the latest version available on PyPI.
+
+    Args:
+        package_name (str): The name of the package to check.
+    """
+    try:
+        # Get the installed version
+        installed_version = pkg_resources.get_distribution(package_name).version
+        # Fetch the latest version from PyPI
+        response = requests.get(
+            f"https://pypi.org/pypi/{package_name}/json", timeout=10
+        )  # Added timeout
+        response.raise_for_status()
+        latest_version = response.json()["info"]["version"]
+
+        if installed_version != latest_version:
+            console.print(
+                f"[yellow]A new version of {package_name} is available: {latest_version} (installed: {installed_version})[/yellow]"
+            )
+            console.print(
+                "[yellow]Consider upgrading to the latest version for new features and improvements.[/yellow]"
+            )
+        else:
+            console.print(
+                f"[green]You are using the latest version of {package_name}.[/green]"
+            )
+    # pylint: disable=broad-except
+    except Exception as e:
+        console.print(f"[red]Error checking for updates: {e}[/red]")
+
+
 @click.command()
 @click.option(
     "--method",
@@ -342,6 +409,9 @@ def main(
         model (str): The model to use (default: gpt-4o-mini).
         temperature (float): Sampling temperature for the LLM response.
     """
+    # Check for updates
+    check_for_updates("iot-agent")
+
     if verbose:
         logger.add("debug.log", level="DEBUG")
     else:
