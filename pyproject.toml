@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iot-agent"
-version = "0.1.2"
+version = "0.1.3"
 description = "Iteration of Thought LLM Agent"
 authors = ["Raphael MANSUY <raphael.mansuy@gmail.com>"]
 readme = "README.md"

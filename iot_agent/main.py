@@ -391,6 +391,18 @@ def check_for_updates(package_name: str) -> None:
     type=str,
     help="File path to save the response (if provided)",
 )  # Added output parameter
+@click.option(
+    "--max-turns",
+    type=int,
+    default=5,
+    help="Maximum number of turns for the iterations (default: 5)",
+)
+@click.option(
+    "--timeout",
+    type=int,
+    default=30,  # Default timeout value
+    help="Timeout in seconds for each iteration (default: 30)",
+)
 def main(
     method: str,
     verbose: bool,
@@ -399,6 +411,8 @@ def main(
     query: Optional[str] = None,
     file: Optional[str] = None,
     output: Optional[str] = None,  # Added output parameter
+    max_turns: int = 5,  # Added max_turns parameter
+    timeout: int = 30,  # Added timeout parameter
 ) -> None:
     """Main entry point for the IoT application.
 
@@ -422,8 +436,8 @@ def main(
     signal.signal(signal.SIGINT, interrupt_handler)
 
     iot = IterationOfThought(
-        model=model, max_iterations=5, timeout=2, temperature=temperature
-    )  # Added temperature as an argument
+        model=model, max_iterations=max_turns, timeout=timeout, temperature=temperature
+    )  # Use timeout here
     console.print(f"[bold cyan]Using model: {model}[/bold cyan]")
 
     if file:
